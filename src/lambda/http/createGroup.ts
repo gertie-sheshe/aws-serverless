@@ -1,33 +1,39 @@
 import { APIGatewayProxyHandler, APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import 'source-map-support/register'
-import * as AWS  from 'aws-sdk'
-import * as uuid from 'uuid'
-import { getUserId } from '../../auth/utils'
+// import * as AWS  from 'aws-sdk'
+// import * as uuid from 'uuid'
+// import { getUserId } from '../../auth/utils'
+
+import { CreateGroupRequest } from 'src/requests/CreateGroupRequest'
+import { createGroup } from 'src/businessLogic/groups'
 
 
-const docClient = new AWS.DynamoDB.DocumentClient()
-const groupsTable = process.env.GROUPS_TABLE
+// const docClient = new AWS.DynamoDB.DocumentClient()
+// const groupsTable = process.env.GROUPS_TABLE
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.log('Processing event: ', event);
 
-  const itemId = uuid.v4();
+  // const itemId = uuid.v4();
 
-  const parsedBody = JSON.parse(event.body);
+  // const parsedBody = JSON.parse(event.body);
+  const newGroup: CreateGroupRequest = JSON.parse(event.body)
   const authorization = event.headers.Authorization
   const split = authorization.split(' ')
   const jwtToken = split[1]
 
-  const newItem = {
-    id: itemId,
-    userId: getUserId(jwtToken),
-    ...parsedBody
-  };
+  const newItem = createGroup(newGroup, jwtToken)
 
-  await docClient.put({
-    TableName: groupsTable,
-    Item: newItem
-  }).promise();
+  // const newItem = {
+  //   id: itemId,
+  //   userId: getUserId(jwtToken),
+  //   ...parsedBody
+  // };
+
+  // await docClient.put({
+  //   TableName: groupsTable,
+  //   Item: newItem
+  // }).promise();
 
 
   return {
